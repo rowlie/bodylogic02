@@ -5,7 +5,7 @@ import streamlit as st
 import os
 
 # Import your chain logic from the separate file
-from rag_agent_logic import initialize_chain, chat_with_rag_and_tools
+from rag_agent_logic import initialize_chain, chat_with_rag_and_tools, initialize_vectorstore
 
 # ============================================================================
 # PAGE CONFIGURATION
@@ -17,12 +17,18 @@ st.set_page_config(
     layout="wide",
 )
 
-# Initialize session state for conversation history display
+# ============================================================================
+# SESSION STATE INITIALIZATION
+# ============================================================================
+
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
 if "chain_initialized" not in st.session_state:
     st.session_state.chain_initialized = False
+
+if "chain" not in st.session_state:
+    st.session_state.chain = None
 
 # ============================================================================
 # SIDEBAR
@@ -31,7 +37,6 @@ if "chain_initialized" not in st.session_state:
 with st.sidebar:
     st.title("⚙️ Configuration")
 
-    # Check if required API keys are set
     api_key = os.getenv("OPENAI_API_KEY")
     pinecone_key = os.getenv("PINECONE_API_KEY")
     langsmith_key = os.getenv("LANGCHAIN_API_KEY")  # Optional
@@ -53,8 +58,8 @@ with st.sidebar:
 
     if st.button("🔄 Clear Chat History"):
         st.session_state.messages = []
-        if "agent_memory" in st.session_state:
-            del st.session_state["agent_memory"]
+        if "chain" in st.session_state:
+            st.session_state.chain = None
         st.session_state.chain_initialized = False
         st.rerun()
 
@@ -84,23 +89,38 @@ st.markdown(
     "Ask anything about your fitness goals—tools, memory, and RAG retrieval are active!"
 )
 
-# Initialize chain once
+# ============================================================================
+# CHAIN INITIALIZATION
+# ============================================================================
+
 if not st.session_state.chain_initialized:
     try:
         with st.spinner("🔧 Initializing RAG Agent..."):
-            initialize_chain()
+            # Initialize your vectorstore
+            vectorstore = initialize_vectorstore(
+                api_key=os.getenv("PINECONE_API_KEY"),
+                environment="us-west1-gcp"  # replace with your Pinecone environment
+            )
+            # Initialize chain
+            st.session_state.chain = initialize_chain(vectorstore)
             st.session_state.chain_initialized = True
             st.success("Agent successfully initialized! Ask me a question.")
     except Exception as e:
-        st.error(f"❌ Failed to initialize chain. Check environment variables: {str(e)}")
+        st.error(f"❌ Failed to initialize chain. Details: {str(e)}")
         st.stop()
 
-# Display conversation history
+# ============================================================================
+# DISPLAY CONVERSATION HISTORY
+# ============================================================================
+
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Chat input
+# ============================================================================
+# CHAT INPUT AND RESPONSE
+# ============================================================================
+
 if prompt := st.chat_input("Ask your question here..."):
     # Add user message to history
     st.session_state.messages.append({"role": "user", "content": prompt})
@@ -109,20 +129,21 @@ if prompt := st.chat_input("Ask your question here..."):
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Generate response
+    # Generate assistant response
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
-
         try:
             with st.spinner("Thinking..."):
-                response = chat_with_rag_and_tools(prompt)
-                message_placeholder.markdown(response)
+                # Pass the stored chain and user prompt
+                answer, sources = chat_with_rag_and_tools(
+                    st.session_state.chain, prompt
+                )
+                message_placeholder.markdown(answer)
 
                 # Add assistant response to history
                 st.session_state.messages.append(
-                    {"role": "assistant", "content": response}
+                    {"role": "assistant", "content": answer}
                 )
-
         except Exception as e:
             error_msg = f"❌ Error during response generation. Details: {str(e)}"
             message_placeholder.error(error_msg)
@@ -130,6 +151,9 @@ if prompt := st.chat_input("Ask your question here..."):
                 {"role": "assistant", "content": error_msg}
             )
 
-# Footer
+# ============================================================================
+# FOOTER
+# ============================================================================
+
 st.divider()
 st.caption("💡 Tip: Memory and tools are active. Try a follow-up question!")
