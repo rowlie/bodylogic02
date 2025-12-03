@@ -1,4 +1,4 @@
-# Streamlit UI
+# Streamlit and dependencies
 streamlit==1.28.1
 rich==13.4.2
 markdown-it-py==4.0.0
@@ -19,3 +19,4 @@ pinecone-client==2.2.2
 
 # Core dependencies
 numpy==1.26.4
+
