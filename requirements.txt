@@ -1,43 +1,31 @@
-# ------------------------------
-# Streamlit + UI dependencies
-# ------------------------------
+# Streamlit app
 streamlit==1.33.0
-rich==13.4.2
-markdown-it-py<3,>=2.2.0
-pygments<3,>=2.13.0
-mdurl~=0.1
+rich<14,>=10.14.0        # Matches Streamlit 1.33.0 requirement
 python-dotenv==1.0.1
 
-# ------------------------------
-# LangChain and LLM
-# ------------------------------
-langchain==0.2.6
+# LangChain
+langchain==0.2.10
 langchain-core==0.2.10
 langchain-openai==0.1.7
 langchain-community==0.2.6
 langsmith==0.1.75
 
+# OpenAI
 openai==1.35.7
 
-# ------------------------------
 # RAG / Embeddings
-# ------------------------------
 pinecone-client==3.1.0
 sentence-transformers==2.6.1
-torch>=2.1.0,<2.2
+torch>=2.1.0,<2.2       # Must match sentence-transformers 2.6.1
 transformers==4.57.3
 
-# ------------------------------
 # Utilities
-# ------------------------------
 tiktoken==0.7.0
 numpy==1.26.4
 pandas==2.3.3
 requests==2.32.5
 scikit-learn==1.7.2
 
-# ------------------------------
 # Optional but useful
-# ------------------------------
 pyyaml==6.0.3
 dataclasses-json==0.6.7
