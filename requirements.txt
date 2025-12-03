@@ -2,25 +2,28 @@
 streamlit==1.33.0
 python-dotenv==1.0.1
 
-# LangChain stack
+# LangChain (core, openai, community) compatible with langsmith
 langchain==0.2.6
 langchain-core==0.2.10
-langchain-community==0.2.6
 langchain-openai==0.1.7
-langsmith>=0.1.75,<0.2.0   # ✅ updated to satisfy langchain-core
+langchain-community==0.2.6
+langsmith==0.1.75
 
-# OpenAI SDK
+# OpenAI
 openai==1.35.7
 
-# Vector DB / Embeddings
+# Pinecone
 pinecone-client==3.1.0
+
+# Sentence embeddings
 sentence-transformers==2.6.1
 torch==2.0.1
 
-# Tokenizer for OpenAI
+# Tokenization
 tiktoken==0.7.0
 
-# Optional but recommended for Streamlit visualizations
+# Misc
 numpy==1.26.4
 pandas==2.3.3
-
+requests==2.32.5
+rich==14.2.0
