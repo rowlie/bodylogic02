@@ -87,7 +87,7 @@ def get_retriever() -> SentenceTransformer:
 
 @tool
 def calculator(expression: str) -> str:
-    """Evaluate a simple math expression and return the result."""
+    """Evaluate a simple math expression."""
     try:
         result = eval(expression)
         return f"Result: {result}"
@@ -96,32 +96,37 @@ def calculator(expression: str) -> str:
 
 @tool
 def get_current_time() -> str:
-    """Return the current date and time as a string."""
+    """Return the current date/time."""
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 @tool
 def word_count(text: str) -> str:
-    """Count the number of words in the given text."""
+    """Count words in text."""
     return f"Word count: {len(text.split())}"
 
 @tool
 def convert_case(text: str, case_type: str) -> str:
     """
     Convert text case.
-    case_type options: 'upper', 'lower', 'title'
+    case_type options: 'upper', 'lower', or 'title'
     """
-    if case_type.lower() == "upper":
+    if case_type == "upper":
         return text.upper()
-    elif case_type.lower() == "lower":
+    elif case_type == "lower":
         return text.lower()
-    elif case_type.lower() == "title":
+    elif case_type == "title":
         return text.title()
     else:
         return f"Error: Unknown case_type '{case_type}'"
 
 @tool
-def estimate_targets(weight_kg: float, sex: str, activity: str, goal: str) -> str:
-    """Estimate daily calories and protein targets for fitness goals."""
+def estimate_targets(
+    weight_kg: float, 
+    sex: str, 
+    activity: str, 
+    goal: str
+) -> str:
+    """Estimate daily calories and protein targets."""
     factors = {"sedentary": 28, "light": 31, "moderate": 34, "active": 37}
     factor = factors.get(activity.lower(), 31)
     maintenance = weight_kg * factor
@@ -203,7 +208,10 @@ def initialize_chain() -> None:
     print(f"✅ Connected to Pinecone index: {INDEX_NAME}")
 
     # LLM setup
-    llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+    llm = ChatOpenAI(
+        model="gpt-3.5-turbo",
+        temperature=0,
+    )
 
     # Memory
     if "agent_memory" not in st.session_state:
@@ -249,7 +257,7 @@ def initialize_chain() -> None:
 def chat_with_rag_and_tools(user_message: str) -> str:
     global rag_agent_chain
     if not _initialized or rag_agent_chain is None:
-        raise RuntimeError("Chain not initialized. Call initialize_chain() first")
+        raise RuntimeError("Chain not initialized. Call initialize_chain()")
 
     result = rag_agent_chain.invoke(user_message)
     return result["final_response"].get("output")
