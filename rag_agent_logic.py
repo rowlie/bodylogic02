@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Stable RAG Agent Logic – LangChain 0.1.x compatible
-This version is fully stable for Streamlit + Pinecone + Tools + Memory.
-
-Tested against:
-- langchain==0.1.17
-- langchain-core==0.1.30
-- langchain-openai==0.0.6
+Stable RAG Agent Logic – LangChain 0.2.x compatible
+This version uses LCEL, Agent memory, tools, and Pinecone RAG retrieval.
 """
 
 import os
@@ -14,27 +9,24 @@ from datetime import datetime
 from typing import Dict, List
 import streamlit as st
 
-# ---- Embeddings / Vector DB ----
+# --- Embeddings / Vector DB ---
 from sentence_transformers import SentenceTransformer
-from pinecone import Pinecone
+import pinecone
 
-# ---- LangChain Core ----
+# --- LangChain ---
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage
 from langchain_core.tools import tool
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-
-# ---- Stable LangChain Agents API (0.1.17) ----
-from langchain.agents import AgentExecutor, create_openai_functions_agent
-
-# ---- Memory ----
 from langchain.memory import ConversationBufferWindowMemory
 
+# --- Agents ---
+from langchain.agents import create_openai_functions_agent, AgentExecutor
 
-# =====================================================================
+# ============================================================================
 # CONFIG
-# =====================================================================
+# ============================================================================
 
 INDEX_NAME = "youtube-qa-index"
 TOP_K = 5
@@ -61,25 +53,23 @@ TOOLS:
 When a tool is used, mention it and base your answer on the tool output.
 """
 
-
-# =====================================================================
-# GLOBALS
-# =====================================================================
-
 _initialized = False
 retriever = None
-pc = None
 index = None
+pinecone_client = None
 rag_agent_chain = None
 
-
-# =====================================================================
-# SETUP
-# =====================================================================
+# ============================================================================
+# SETUP ENV
+# ============================================================================
 
 def _setup_env():
     os.environ.setdefault("LANGCHAIN_TRACING_V2", "false")
 
+
+# ============================================================================
+# RETRIEVER
+# ============================================================================
 
 @st.cache_resource
 def get_retriever():
@@ -89,35 +79,28 @@ def get_retriever():
     return model
 
 
-# =====================================================================
+# ============================================================================
 # TOOLS
-# =====================================================================
+# ============================================================================
 
 @tool
 def calculator(expression: str) -> str:
-    """Evaluate a simple math expression."""
     try:
         result = eval(expression)
         return f"Result: {result}"
     except Exception as e:
         return f"Error: {str(e)}"
 
-
 @tool
 def get_current_time() -> str:
-    """Return the current date/time."""
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
 
 @tool
 def word_count(text: str) -> str:
-    """Count words in text."""
     return f"Word count: {len(text.split())}"
-
 
 @tool
 def convert_case(text: str, case_type: str) -> str:
-    """Convert text case."""
     if case_type == "upper":
         return text.upper()
     if case_type == "lower":
@@ -126,10 +109,8 @@ def convert_case(text: str, case_type: str) -> str:
         return text.title()
     return "Error: case_type must be 'upper', 'lower', or 'title'."
 
-
 @tool
 def estimate_targets(weight_kg: float, sex: str, activity: str, goal: str) -> str:
-    """Estimate calorie + protein targets."""
     factors = {"sedentary": 28, "light": 31, "moderate": 34, "active": 37}
     factor = factors.get(activity, 31)
     maintenance = weight_kg * factor
@@ -153,27 +134,23 @@ def estimate_targets(weight_kg: float, sex: str, activity: str, goal: str) -> st
         f"- Protein: {p_low:.1f}–{p_high:.1f} g/day"
     )
 
-
 tools = [calculator, get_current_time, word_count, convert_case, estimate_targets]
 
 
-# =====================================================================
-# RAG HELPERS
-# =====================================================================
+# ============================================================================
+# RAG CONTEXT HELPERS
+# ============================================================================
 
 def retrieve_pinecone_context(query: str, top_k: int = TOP_K):
     global index
     if index is None:
         return {"matches": []}
-
     try:
         vec = get_retriever().encode(query).tolist()
-        res = index.query(vector=vec, top_k=top_k, include_metadata=True)
-        return res
+        return index.query(vector=vec, top_k=top_k, include_metadata=True)
     except Exception as e:
         print("Pinecone error:", e)
         return {"matches": []}
-
 
 def context_string_from_matches(matches: List) -> str:
     ctx = []
@@ -183,44 +160,37 @@ def context_string_from_matches(matches: List) -> str:
             ctx.append(passage)
     return "\n\n".join(ctx)
 
-
 def _retrieve_and_format_context(user_message: str) -> dict:
-    pc_res = retrieve_pinecone_context(user_message)
-    ctx = context_string_from_matches(pc_res.get("matches", []))
-
+    res = retrieve_pinecone_context(user_message)
+    ctx = context_string_from_matches(res.get("matches", []))
     rag_block = f"RAG_CONTEXT:\n{ctx}\n\n" if ctx else ""
     final_input = f"{rag_block}USER_QUERY: {user_message}"
-
     return {"input": final_input, "rag_context": ctx}
 
 
-# =====================================================================
+# ============================================================================
 # INITIALIZATION
-# =====================================================================
+# ============================================================================
 
 def initialize_chain():
-    global _initialized, pc, index, rag_agent_chain
+    global _initialized, pinecone_client, index, rag_agent_chain
 
     if _initialized:
         return
 
     _setup_env()
 
-    print("🔧 Initializing RAG + Tools Agent...")
-
-    # Pinecone
     pinecone_key = os.getenv("PINECONE_API_KEY")
     if not pinecone_key:
         raise ValueError("Missing PINECONE_API_KEY")
 
-    pc = Pinecone(api_key=pinecone_key)
-    index = pc.Index(INDEX_NAME)
-    print("✅ Pinecone connected:", INDEX_NAME)
+    pinecone_client = pinecone
+    pinecone_client.init(api_key=pinecone_key)
+    index = pinecone_client.Index(INDEX_NAME)
+    print(f"✅ Connected to Pinecone index: {INDEX_NAME}")
 
-    # Model
     llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
 
-    # Memory
     if "agent_memory" not in st.session_state:
         st.session_state.agent_memory = ConversationBufferWindowMemory(
             memory_key="chat_history",
@@ -229,7 +199,6 @@ def initialize_chain():
         )
     memory_obj = st.session_state.agent_memory
 
-    # Prompt
     prompt = ChatPromptTemplate.from_messages(
         [
             SystemMessage(content=SYSTEM_PROMPT),
@@ -239,7 +208,6 @@ def initialize_chain():
         ]
     )
 
-    # Agent
     agent = create_openai_functions_agent(llm, tools, prompt)
 
     executor = AgentExecutor(
@@ -250,7 +218,6 @@ def initialize_chain():
         handle_parsing_errors=True,
     )
 
-    # LCEL RAG → Agent Chain
     rag_agent_chain = (
         RunnableLambda(_retrieve_and_format_context)
         | RunnablePassthrough.assign(final_response=executor)
@@ -259,15 +226,13 @@ def initialize_chain():
     _initialized = True
 
 
-# =====================================================================
-# MAIN CHAT ENTRY
-# =====================================================================
+# ============================================================================
+# MAIN CHAT FUNCTION
+# ============================================================================
 
 def chat_with_rag_and_tools(user_message: str) -> str:
     global rag_agent_chain
-
     if not _initialized or rag_agent_chain is None:
-        raise RuntimeError("Chain not initialized. Call initialize_chain().")
-
+        raise RuntimeError("Chain not initialized. Call initialize_chain() first.")
     result = rag_agent_chain.invoke(user_message)
     return result["final_response"].get("output")
