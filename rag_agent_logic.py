@@ -20,11 +20,11 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage
 from langchain_core.tools import tool
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
-# --- CRITICAL FIX: Explicitly import AgentExecutor and agent creator from their sub-modules ---
-# This ensures that the code finds the classes even if the main package __init__.py fails.
-from langchain.agents.agent_executor import AgentExecutor
-from langchain.agents.openai_functions import create_openai_functions_agent
-# --------------------------------------------------------------------------------------------
+# --- CRITICAL REVERT: Using standard top-level imports ---
+# If the explicit path (langchain.agents.agent_executor) fails, the top-level 
+# import might succeed if the package __init__ is cleaner.
+from langchain.agents import AgentExecutor, create_openai_functions_agent
+# ----------------------------------------------------------------------------
 from langchain.memory import ConversationBufferWindowMemory
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
