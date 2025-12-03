@@ -87,7 +87,7 @@ def get_retriever() -> SentenceTransformer:
 
 @tool
 def calculator(expression: str) -> str:
-    """Evaluate a simple math expression."""
+    """Evaluate a simple math expression and return the result."""
     try:
         result = eval(expression)
         return f"Result: {result}"
@@ -96,37 +96,32 @@ def calculator(expression: str) -> str:
 
 @tool
 def get_current_time() -> str:
-    """Return the current date/time."""
+    """Return the current date and time as a string."""
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 @tool
 def word_count(text: str) -> str:
-    """Count words in text."""
+    """Count the number of words in the given text."""
     return f"Word count: {len(text.split())}"
 
 @tool
 def convert_case(text: str, case_type: str) -> str:
     """
     Convert text case.
-    case_type options: 'upper', 'lower', or 'title'
+    case_type options: 'upper', 'lower', 'title'
     """
-    if case_type == "upper":
+    if case_type.lower() == "upper":
         return text.upper()
-    elif case_type == "lower":
+    elif case_type.lower() == "lower":
         return text.lower()
-    elif case_type == "title":
+    elif case_type.lower() == "title":
         return text.title()
     else:
         return f"Error: Unknown case_type '{case_type}'"
 
 @tool
-def estimate_targets(
-    weight_kg: float, 
-    sex: str, 
-    activity: str, 
-    goal: str
-) -> str:
-    """Estimate daily calories and protein targets."""
+def estimate_targets(weight_kg: float, sex: str, activity: str, goal: str) -> str:
+    """Estimate daily calories and protein targets for fitness goals."""
     factors = {"sedentary": 28, "light": 31, "moderate": 34, "active": 37}
     factor = factors.get(activity.lower(), 31)
     maintenance = weight_kg * factor
@@ -254,7 +249,7 @@ def initialize_chain() -> None:
 def chat_with_rag_and_tools(user_message: str) -> str:
     global rag_agent_chain
     if not _initialized or rag_agent_chain is None:
-        raise RuntimeError("Chain not initialized. Call initialize_chain()")
+        raise RuntimeError("Chain not initialized. Call initialize_chain() first")
 
     result = rag_agent_chain.invoke(user_message)
     return result["final_response"].get("output")
