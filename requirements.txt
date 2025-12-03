@@ -1,31 +1,11 @@
-# Streamlit
-streamlit==1.33.0
-rich<14  # keep compatible with Streamlit
-python-dotenv==1.0.1
-
-# LangChain
-langchain==0.2.15
-langchain-core==0.2.10
-langchain-openai==0.1.7
-langchain-community==0.2.6
-langsmith==0.1.75
-
-# OpenAI
-openai==1.35.7
-
-# RAG / Embeddings
-pinecone-client==3.1.0
+streamlit==1.28.1
+rich==14.2.0
+markdown-it-py==4.0.0
+mdurl==0.1.2
+pygments==2.19.2
+numpy>=1.24.0
+torch==2.3.1
+transformers==4.42.2
 sentence-transformers==2.2.2
-torch==2.0.1  # compatible with sentence-transformers and transformers
-transformers==4.57.3
-
-# Utilities
-tiktoken==0.7.0
-numpy==1.26.4
-pandas==2.3.3
-requests==2.32.5
-scikit-learn==1.7.2
-
-# Optional but useful
-pyyaml==6.0.3
-dataclasses-json==0.6.7
+pinecone-client==2.2.2
+huggingface-hub==0.17.3
