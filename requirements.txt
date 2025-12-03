@@ -3,5 +3,5 @@ openai
 langchain                   # Core library
 langchain-openai            # OpenAI integrations
 langchain-core              # Core components
-pinecone-client==3.2.2      # Pin for stability
+
 sentence-transformers
