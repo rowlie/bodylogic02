@@ -11,7 +11,7 @@ import pinecone
 # CONFIGURATION
 # ----------------------------
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
-VECTOR_STORE_INDEX_NAME = "my-index"
+VECTOR_STORE_INDEX_NAME = "youtube-qa-index"
 
 # ----------------------------
 # Initialize Pinecone + embeddings
