@@ -3,6 +3,5 @@ openai
 langchain
 langchain-openai
 langchain-core
-pinecone-client
+pinecone-client==3.2.2  # Pin to a known stable version
 sentence-transformers
-3.  **Redeploy:** Deploy this new structure to a **new Streamlit app**.
