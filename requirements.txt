@@ -3,5 +3,7 @@ openai
 langchain
 langchain-openai
 langchain-core
+langgraph                 # Added for maximum agent dependency stability
+tiktoken                  # Added for token counting stability
 pinecone-client==3.2.2  # Pin to a known stable version
 sentence-transformers
