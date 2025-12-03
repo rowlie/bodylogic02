@@ -1,7 +1,8 @@
 streamlit
 openai
-langchain
-langchain-openai
-langchain-core
-pinecone-client==3.2.2  # Critical for Pinecone integration
+langchain==0.1.17
+langchain-core==0.1.30
+langchain-openai==0.0.6
+pinecone-client==3.2.2
 sentence-transformers
+
