@@ -15,7 +15,7 @@ import streamlit as st
 
 # --- Embeddings / Vector DB ---
 from sentence_transformers import SentenceTransformer
-from pinecone import Pinecone
+import pinecone
 
 # --- LangChain ---
 from langchain_openai import ChatOpenAI
@@ -62,7 +62,7 @@ When a tool is used, mention it and base your answer on the tool output.
 
 _initialized = False
 retriever: SentenceTransformer = None
-pc: Pinecone = None
+pc = None
 index = None
 rag_agent_chain = None
 
@@ -103,7 +103,6 @@ def word_count(text: str) -> str:
 
 @tool
 def convert_case(text: str, case_type: str) -> str:
-    case_type = case_type.lower()
     if case_type == "upper":
         return text.upper()
     elif case_type == "lower":
@@ -167,10 +166,8 @@ def context_string_from_matches(matches: List) -> str:
 def _retrieve_and_format_context(user_message: str) -> dict:
     pc_res = retrieve_pinecone_context(user_message)
     ctx = context_string_from_matches(pc_res.get("matches", []))
-
     rag_block = f"RAG_CONTEXT:\n{ctx}\n\n" if ctx else ""
     final_input = f"{rag_block}USER_QUERY: {user_message}"
-
     return {"input": final_input, "rag_context": ctx}
 
 # ============================================================================
@@ -190,11 +187,12 @@ def initialize_chain() -> None:
     pinecone_key = os.getenv("PINECONE_API_KEY")
     if not pinecone_key:
         raise ValueError("PINECONE_API_KEY not set")
-    pc = Pinecone(api_key=pinecone_key)
+    pc = pinecone
+    pc.init(api_key=pinecone_key, environment="us-west1-gcp")
     index = pc.Index(INDEX_NAME)
     print(f"✅ Connected to Pinecone index: {INDEX_NAME}")
 
-    # LLM setup (removed proxies)
+    # LLM setup
     llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
 
     # Memory
