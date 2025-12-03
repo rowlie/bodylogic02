@@ -19,4 +19,11 @@ tiktoken==0.7.0
 numpy==1.26.4
 pandas==2.3.3
 requests==2.32.5
-scik
+scikit-learn==1.7.2
+
+pyyaml==6.0.3
+dataclasses-json==0.6.7
+
+markdown-it-py<3,>=2.2.0
+pygments<3,>=2.13.0
+mdurl~=0.1
