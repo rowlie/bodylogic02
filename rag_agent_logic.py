@@ -87,7 +87,6 @@ def get_retriever() -> SentenceTransformer:
 
 @tool
 def calculator(expression: str) -> str:
-    """Evaluate a simple math expression."""
     try:
         result = eval(expression)
         return f"Result: {result}"
@@ -96,37 +95,25 @@ def calculator(expression: str) -> str:
 
 @tool
 def get_current_time() -> str:
-    """Return the current date/time."""
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 @tool
 def word_count(text: str) -> str:
-    """Count words in text."""
     return f"Word count: {len(text.split())}"
 
 @tool
 def convert_case(text: str, case_type: str) -> str:
-    """
-    Convert text case.
-    case_type options: 'upper', 'lower', or 'title'
-    """
+    case_type = case_type.lower()
     if case_type == "upper":
         return text.upper()
     elif case_type == "lower":
         return text.lower()
     elif case_type == "title":
         return text.title()
-    else:
-        return f"Error: Unknown case_type '{case_type}'"
+    return f"Error: Unknown case_type '{case_type}'"
 
 @tool
-def estimate_targets(
-    weight_kg: float, 
-    sex: str, 
-    activity: str, 
-    goal: str
-) -> str:
-    """Estimate daily calories and protein targets."""
+def estimate_targets(weight_kg: float, sex: str, activity: str, goal: str) -> str:
     factors = {"sedentary": 28, "light": 31, "moderate": 34, "active": 37}
     factor = factors.get(activity.lower(), 31)
     maintenance = weight_kg * factor
@@ -207,11 +194,8 @@ def initialize_chain() -> None:
     index = pc.Index(INDEX_NAME)
     print(f"✅ Connected to Pinecone index: {INDEX_NAME}")
 
-    # LLM setup
-    llm = ChatOpenAI(
-        model="gpt-3.5-turbo",
-        temperature=0,
-    )
+    # LLM setup (removed proxies)
+    llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
 
     # Memory
     if "agent_memory" not in st.session_state:
