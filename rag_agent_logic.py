@@ -6,18 +6,23 @@ from langchain.memory import ConversationBufferMemory
 from langchain.vectorstores import Pinecone
 from sentence_transformers import SentenceTransformer
 import pinecone
+import os
 
 # ----------------------------
-# CONFIGURATION
+# Constants
 # ----------------------------
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
-VECTOR_STORE_INDEX_NAME = "youtube-qa-index"
+VECTOR_STORE_INDEX_NAME = "youtube-qa-index"  # Your existing Pinecone index
 
 # ----------------------------
-# Initialize Pinecone + embeddings
+# Initialize Pinecone Vector Store
 # ----------------------------
-def initialize_vectorstore(api_key: str, environment: str):
+def initialize_vectorstore(api_key: str = None, environment: str = None):
+    """Connects to Pinecone and returns a vectorstore instance."""
+    api_key = api_key or os.getenv("PINECONE_API_KEY")
+    environment = environment or os.getenv("PINECONE_ENVIRONMENT")  # optional
     pinecone.init(api_key=api_key, environment=environment)
+
     index = pinecone.Index(VECTOR_STORE_INDEX_NAME)
     embeddings_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
     vectorstore = Pinecone(index, embeddings_model.encode, "text")
@@ -27,7 +32,7 @@ def initialize_vectorstore(api_key: str, environment: str):
 # Initialize LangChain Chat Model & Memory
 # ----------------------------
 def initialize_chain(vectorstore):
-    """Create a conversational retrieval chain with memory."""
+    """Creates a conversational retrieval chain with memory."""
     llm = ChatOpenAI(
         model_name="gpt-3.5-turbo",
         temperature=0
@@ -53,7 +58,7 @@ def initialize_chain(vectorstore):
         combine_docs_chain_kwargs={"prompt": prompt},
         return_source_documents=True
     )
-    return chain
+    return chain, memory
 
 # ----------------------------
 # Chat helper
