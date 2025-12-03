@@ -4,7 +4,7 @@ rich<14,>=10.14.0
 python-dotenv==1.0.1
 
 # LangChain
-langchain==0.2.10
+langchain==0.2.6
 langchain-core==0.2.10
 langchain-openai==0.1.7
 langchain-community==0.2.6
@@ -15,8 +15,8 @@ openai==1.35.7
 
 # RAG / Embeddings
 pinecone-client==3.1.0
-sentence-transformers==2.6.1
-torch>=2.1.0,<2.2
+sentence-transformers==2.2.2
+torch==2.1.0
 transformers==4.57.3
 
 # Utilities
@@ -26,6 +26,6 @@ pandas==2.3.3
 requests==2.32.5
 scikit-learn==1.7.2
 
-# Optional
+# Optional but useful
 pyyaml==6.0.3
 dataclasses-json==0.6.7
