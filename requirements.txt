@@ -1,29 +1,16 @@
-# Streamlit
 streamlit==1.33.0
 python-dotenv==1.0.1
-
-# LangChain (core, openai, community) compatible with langsmith
 langchain==0.2.6
 langchain-core==0.2.10
 langchain-openai==0.1.7
 langchain-community==0.2.6
 langsmith==0.1.75
-
-# OpenAI
 openai==1.35.7
-
-# Pinecone
 pinecone-client==3.1.0
-
-# Sentence embeddings
 sentence-transformers==2.6.1
 torch==2.0.1
-
-# Tokenization
 tiktoken==0.7.0
-
-# Misc
 numpy==1.26.4
 pandas==2.3.3
 requests==2.32.5
-rich==14.2.0
+# remove rich, Streamlit will install compatible version
