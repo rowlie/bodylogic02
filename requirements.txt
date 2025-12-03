@@ -1,9 +1,7 @@
 streamlit
 openai
-langchain
-langchain-openai
-langchain-core
-langgraph                 # Added for maximum agent dependency stability
-tiktoken                  # Added for token counting stability
-pinecone-client==3.2.2  # Pin to a known stable version
+langchain                   # Core library
+langchain-openai            # OpenAI integrations
+langchain-core              # Core components
+pinecone-client==3.2.2      # Pin for stability
 sentence-transformers
