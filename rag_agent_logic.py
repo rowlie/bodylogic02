@@ -9,7 +9,6 @@ This module contains the complete RAG agent setup, utilizing:
 """
 
 import os
-import json
 from datetime import datetime
 from typing import Dict, List
 import streamlit as st
@@ -21,7 +20,11 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage
 from langchain_core.tools import tool
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
-from langchain.agents import AgentExecutor, create_openai_functions_agent
+# --- CRITICAL FIX: Explicitly import AgentExecutor and agent creator from their sub-modules ---
+# This ensures that the code finds the classes even if the main package __init__.py fails.
+from langchain.agents.agent_executor import AgentExecutor
+from langchain.agents.openai_functions import create_openai_functions_agent
+# --------------------------------------------------------------------------------------------
 from langchain.memory import ConversationBufferWindowMemory
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
