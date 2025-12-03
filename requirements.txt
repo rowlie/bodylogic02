@@ -1,7 +1,7 @@
 streamlit
 openai
-langchain                   # Core library
-langchain-openai            # OpenAI integrations
-langchain-core              # Core components
-
+langchain
+langchain-openai
+langchain-core
+pinecone-client==3.2.2  # Critical for Pinecone integration
 sentence-transformers
